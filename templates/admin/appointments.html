@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}All Appointments | MediPredict{% endblock %}
+
+{% block page_title %}
+Hospital Appointments
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Appointments Monitor 📅</h2>
+            <p>Track, manage, and update patient consultations across all hospital departments.</p>
+        </div>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="dashboard-card mb-4">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('admin.appointments') }}" class="btn {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm">
+                All ({{ appointments|length if not status_filter else 'View' }})
+            </a>
+            <a href="{{ url_for('admin.appointments', status='pending') }}" class="btn {% if status_filter == 'pending' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} btn-sm">
+                Pending
+            </a>
+            <a href="{{ url_for('admin.appointments', status='confirmed') }}" class="btn {% if status_filter == 'confirmed' %}btn-success{% else %}btn-outline-secondary{% endif %} btn-sm">
+                Confirmed
+            </a>
+            <a href="{{ url_for('admin.appointments', status='completed') }}" class="btn {% if status_filter == 'completed' %}btn-info text-white{% else %}btn-outline-secondary{% endif %} btn-sm">
+                Completed
+            </a>
+            <a href="{{ url_for('admin.appointments', status='cancelled') }}" class="btn {% if status_filter == 'cancelled' %}btn-danger{% else %}btn-outline-secondary{% endif %} btn-sm">
+                Cancelled
+            </a>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="dashboard-card table-card">
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Assigned Doctor</th>
+                        <th>Department</th>
+                        <th>Schedule</th>
+                        <th>Reason for Visit</th>
+                        <th>Current Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td><strong>#{{ appt.id }}</strong></td>
+                        <td>
+                            <strong class="d-block">{{ appt.patient.user.name if appt.patient and appt.patient.user else 'Patient #' ~ appt.patient_id }}</strong>
+                            <small class="text-muted">{{ appt.patient.user.phone if appt.patient and appt.patient.user else '' }}</small>
+                        </td>
+                        <td>
+                            <strong class="d-block">Dr. {{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'Doctor #' ~ appt.doctor_id }}</strong>
+                            <small class="text-muted">{{ appt.doctor.specialization if appt.doctor else '' }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                {{ appt.doctor.department.name if appt.doctor and appt.doctor.department else 'General' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div>{{ appt.appointment_date.strftime('%a, %b %d, %Y') }}</div>
+                            <small class="text-primary fw-semibold">{{ appt.appointment_time.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ appt.reason or 'Routine consultation' }}</small>
+                        </td>
+                        <td>
+                            {% if appt.status == 'confirmed' %}
+                                <span class="status-badge success">Confirmed</span>
+                            {% elif appt.status == 'pending' %}
+                                <span class="status-badge warning">Pending</span>
+                            {% elif appt.status == 'completed' %}
+                                <span class="status-badge info">Completed</span>
+                            {% else %}
+                                <span class="status-badge danger">{{ appt.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.appointments') }}" class="d-flex gap-1 align-items-center">
+                                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                                <select name="status" class="form-select form-select-sm" style="width: 120px;" onchange="this.form.submit()">
+                                    <option value="pending" {% if appt.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="confirmed" {% if appt.status == 'confirmed' %}selected{% endif %}>Confirm</option>
+                                    <option value="completed" {% if appt.status == 'completed' %}selected{% endif %}>Complete</option>
+                                    <option value="cancelled" {% if appt.status == 'cancelled' %}selected{% endif %}>Cancel</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h5>No appointments found</h5>
+            <p>No appointments match the selected filter criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

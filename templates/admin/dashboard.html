@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | MediPredict{% endblock %}
+
+{% block page_title %}
+Admin Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+
+        <div>
+            <h2>
+                Hospital Overview 🏥
+            </h2>
+
+            <p>
+                Monitor hospital operations, resources and AI insights.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('admin.forecast') }}"
+            class="btn-primary-custom"
+        >
+            <i class="bi bi-graph-up-arrow me-2"></i>
+            Forecast Report
+        </a>
+
+    </div>
+
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon blue">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+
+                <div class="stat-info">
+                    <span>Total Doctors</span>
+                    <h3>{{ total_doctors }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon green">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div class="stat-info">
+                    <span>Total Patients</span>
+                    <h3>{{ total_patients }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon orange">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+
+                <div class="stat-info">
+                    <span>Appointments</span>
+                    <h3>{{ total_appointments }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon red">
+                    <i class="bi bi-hospital-fill"></i>
+                </div>
+
+                <div class="stat-info">
+                    <span>Available Beds</span>
+                    <h3>{{ available_beds }}</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Operations -->
+    <div class="row g-4">
+
+        <!-- Hospital Activity -->
+        <div class="col-lg-8">
+
+            <div class="dashboard-card">
+
+                <div
+                    class="d-flex justify-content-between
+                           align-items-center mb-4"
+                >
+
+                    <div>
+                        <h5 class="mb-1">
+                            Hospital Activity
+                        </h5>
+
+                        <small class="text-muted">
+                            Current hospital operations & resource utilization
+                        </small>
+                    </div>
+
+                    <span class="status-badge success">
+                        System Active
+                    </span>
+
+                </div>
+
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="p-3 rounded-3"
+                            style="background:#eff6ff;"
+                        >
+
+                            <i
+                                class="bi bi-door-open
+                                       text-primary fs-4"
+                            ></i>
+
+                            <h4 class="mt-3 mb-1">
+                                {{ admissions_today }}
+                            </h4>
+
+                            <small class="text-muted">
+                                Admissions Today
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="p-3 rounded-3"
+                            style="background:#f0fdf4;"
+                        >
+
+                            <i
+                                class="bi bi-box-arrow-right
+                                       text-success fs-4"
+                            ></i>
+
+                            <h4 class="mt-3 mb-1">
+                                {{ discharges_today }}
+                            </h4>
+
+                            <small class="text-muted">
+                                Discharges Today
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="p-3 rounded-3"
+                            style="background:#fffbeb;"
+                        >
+
+                            <i
+                                class="bi bi-heart-pulse
+                                       text-warning fs-4"
+                            ></i>
+
+                            <h4 class="mt-3 mb-1">
+                                {{ icu_available }}
+                            </h4>
+
+                            <small class="text-muted">
+                                ICU Available
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Quick Management -->
+        <div class="col-lg-4">
+
+            <div class="dashboard-card">
+
+                <h5 class="mb-1">
+                    Quick Management
+                </h5>
+
+                <small class="text-muted">
+                    Manage hospital resources
+                </small>
+
+
+                <div class="mt-4">
+
+                    <a
+                        href="{{ url_for('admin.doctors') }}"
+                        class="d-flex align-items-center
+                               gap-3 p-3 mb-2 rounded-3
+                               text-dark"
+                        style="background:#eff6ff;"
+                    >
+
+                        <div class="stat-icon blue">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                Manage Doctors
+                            </strong>
+
+                            <small class="text-muted">
+                                Add and manage doctors
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="{{ url_for('admin.patients') }}"
+                        class="d-flex align-items-center
+                               gap-3 p-3 mb-2 rounded-3
+                               text-dark"
+                        style="background:#f0fdf4;"
+                    >
+
+                        <div class="stat-icon green">
+                            <i class="bi bi-people"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                Manage Patients
+                            </strong>
+
+                            <small class="text-muted">
+                                View registered patients
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="{{ url_for('admin.departments') }}"
+                        class="d-flex align-items-center
+                               gap-3 p-3 rounded-3
+                               text-dark"
+                        style="background:#fffbeb;"
+                    >
+
+                        <div class="stat-icon orange">
+                            <i class="bi bi-hospital"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                Departments
+                            </strong>
+
+                            <small class="text-muted">
+                                Manage hospital departments
+                            </small>
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- AI Forecast -->
+    <div class="dashboard-card mt-4">
+
+        <div class="row align-items-center">
+
+            <div class="col-md-8">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon blue">
+                        <i class="bi bi-robot"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1">
+                            AI Demand Forecasting
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Predict upcoming patient demand,
+                            bed requirements and ICU requirements
+                            using historical hospital data and machine learning.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                <a
+                    href="{{ url_for('admin.forecast') }}"
+                    class="btn-primary-custom"
+                >
+                    <i class="bi bi-stars me-2"></i>
+                    Open Forecast
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Recent Appointments -->
+    <div class="dashboard-card table-card mt-4">
+
+        <div
+            class="d-flex justify-content-between
+                   align-items-center mb-3"
+        >
+
+            <div>
+
+                <h5 class="mb-1">
+                    Recent Appointments
+                </h5>
+
+                <small class="text-muted">
+                    Latest hospital appointments
+                </small>
+
+            </div>
+
+            <a
+                href="{{ url_for('admin.appointments') }}"
+                class="small text-primary fw-semibold"
+            >
+                View All
+            </a>
+
+        </div>
+
+        {% if recent_appointments %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in recent_appointments %}
+                    <tr>
+                        <td><strong>#{{ appt.id }}</strong></td>
+                        <td>
+                            {% if appt.patient and appt.patient.user %}
+                                {{ appt.patient.user.name }}
+                            {% else %}
+                                Patient #{{ appt.patient_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.doctor and appt.doctor.user %}
+                                Dr. {{ appt.doctor.user.name }}
+                            {% else %}
+                                Doctor #{{ appt.doctor_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.doctor and appt.doctor.department %}
+                                <span class="badge bg-light text-dark border">{{ appt.doctor.department.name }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ appt.appointment_date.strftime('%b %d, %Y') }} at {{ appt.appointment_time.strftime('%I:%M %p') }}
+                        </td>
+                        <td>
+                            {% if appt.status == 'confirmed' %}
+                                <span class="status-badge success">Confirmed</span>
+                            {% elif appt.status == 'pending' %}
+                                <span class="status-badge warning">Pending</span>
+                            {% elif appt.status == 'completed' %}
+                                <span class="status-badge info">Completed</span>
+                            {% else %}
+                                <span class="status-badge danger">{{ appt.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+
+            <i class="bi bi-calendar-x"></i>
+
+            <h5>
+                No appointments yet
+            </h5>
+
+            <p>
+                Recent appointments will appear here.
+            </p>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+
+    <!-- System Status -->
+    <div class="dashboard-card mt-4">
+
+        <div class="row g-3">
+
+            <div class="col-md-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <i
+                        class="bi bi-database-check
+                               text-success fs-3"
+                    ></i>
+
+                    <div>
+
+                        <strong class="d-block">
+                            Database
+                        </strong>
+
+                        <small class="text-success">
+                            Connected (PostgreSQL)
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <i
+                        class="bi bi-cpu
+                               text-primary fs-3"
+                    ></i>
+
+                    <div>
+
+                        <strong class="d-block">
+                            AI Engine
+                        </strong>
+
+                        <small class="text-primary">
+                            MediPredict ML v2.4 (Active)
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <i
+                        class="bi bi-shield-check
+                               text-success fs-3"
+                    ></i>
+
+                    <div>
+
+                        <strong class="d-block">
+                            Security
+                        </strong>
+
+                        <small class="text-success">
+                            RBAC Active & Protected
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

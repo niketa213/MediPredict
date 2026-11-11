@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments | Doctor Portal{% endblock %}
+
+{% block page_title %}
+Doctor Appointments
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Appointments Schedule 🩺</h2>
+            <p>Review patient appointment requests, confirm dates, and update consultation progress.</p>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="dashboard-card table-card">
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient Name</th>
+                        <th>Phone</th>
+                        <th>Date & Time</th>
+                        <th>Reason for Visit</th>
+                        <th>Status</th>
+                        <th>Change Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td><strong>#{{ appt.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar" style="width: 34px; height: 34px; font-size: 13px; background: #10b981;">
+                                    {{ appt.patient.user.name[0]|upper if appt.patient and appt.patient.user else 'P' }}
+                                </div>
+                                <strong>{{ appt.patient.user.name if appt.patient and appt.patient.user else 'Patient #' ~ appt.patient_id }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ appt.patient.user.phone if appt.patient and appt.patient.user else 'Not provided' }}</td>
+                        <td>
+                            <div>{{ appt.appointment_date.strftime('%a, %b %d, %Y') }}</div>
+                            <small class="text-primary fw-semibold">{{ appt.appointment_time.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ appt.reason or 'General checkup' }}</small>
+                        </td>
+                        <td>
+                            {% if appt.status == 'confirmed' %}
+                                <span class="status-badge success">Confirmed</span>
+                            {% elif appt.status == 'pending' %}
+                                <span class="status-badge warning">Pending</span>
+                            {% elif appt.status == 'completed' %}
+                                <span class="status-badge info">Completed</span>
+                            {% else %}
+                                <span class="status-badge danger">{{ appt.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('doctor.appointments') }}" class="d-flex gap-1 align-items-center">
+                                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                                <select name="status" class="form-select form-select-sm" style="width: 120px;" onchange="this.form.submit()">
+                                    <option value="pending" {% if appt.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="confirmed" {% if appt.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                    <option value="completed" {% if appt.status == 'completed' %}selected{% endif %}>Completed</option>
+                                    <option value="cancelled" {% if appt.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h5>No appointments booked</h5>
+            <p>You have no scheduled patient consultations at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

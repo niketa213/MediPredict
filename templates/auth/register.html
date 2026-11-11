@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Register | MediPredict{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+
+    <!-- Brand -->
+    <div class="auth-brand">
+
+        <div class="logo-icon brand-mark">
+            <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+
+        <h2>MediPredict</h2>
+
+        <p>
+            AI-Powered Hospital Management System
+        </p>
+
+    </div>
+
+
+    <!-- Register Card -->
+    <div class="auth-card">
+
+        <h3>Create Patient Account</h3>
+
+        <p class="subtitle">
+            Register to book appointments and find doctors.
+        </p>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('auth.register') }}"
+            id="registerForm"
+        >
+
+            <!-- Name -->
+            <div class="mb-3">
+
+                <label
+                    for="name"
+                    class="form-label"
+                >
+                    Full Name
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-person"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Email -->
+            <div class="mb-3">
+
+                <label
+                    for="email"
+                    class="form-label"
+                >
+                    Email Address
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Phone -->
+            <div class="mb-3">
+
+                <label
+                    for="phone"
+                    class="form-label"
+                >
+                    Phone Number
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-telephone"></i>
+                    </span>
+
+                    <input
+                        type="tel"
+                        class="form-control"
+                        id="phone"
+                        name="phone"
+                        placeholder="Enter phone number"
+                        autocomplete="tel"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Password -->
+            <div class="mb-3">
+
+                <label
+                    for="password"
+                    class="form-label"
+                >
+                    Password
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-lock"></i>
+                    </span>
+
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Create a password"
+                        autocomplete="new-password"
+                        minlength="6"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        id="togglePassword"
+                        aria-label="Toggle password visibility"
+                    >
+                        <i
+                            class="bi bi-eye"
+                            id="passwordIcon"
+                        ></i>
+                    </button>
+
+                </div>
+
+                <small class="text-muted">
+                    Minimum 6 characters.
+                </small>
+
+            </div>
+
+
+            <!-- Confirm Password -->
+            <div class="mb-4">
+
+                <label
+                    for="confirm_password"
+                    class="form-label"
+                >
+                    Confirm Password
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        <i class="bi bi-shield-lock"></i>
+                    </span>
+
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="confirm_password"
+                        name="confirm_password"
+                        placeholder="Confirm your password"
+                        autocomplete="new-password"
+                        minlength="6"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        id="toggleConfirmPassword"
+                        aria-label="Toggle confirm password visibility"
+                    >
+                        <i
+                            class="bi bi-eye"
+                            id="confirmPasswordIcon"
+                        ></i>
+                    </button>
+
+                </div>
+
+                <small id="passwordMatchMessage" class="text-danger d-none">
+                    Passwords do not match.
+                </small>
+
+            </div>
+
+
+            <!-- Submit -->
+            <button
+                type="submit"
+                class="btn btn-primary w-100 py-2 fw-semibold"
+                id="submitBtn"
+            >
+                <i class="bi bi-person-plus me-2"></i>
+                Create Patient Account
+            </button>
+
+        </form>
+
+
+        <!-- Login -->
+        <div class="text-center mt-4">
+
+            <span class="text-muted small">
+                Already have an account?
+            </span>
+
+            <a
+                href="{{ url_for('auth.login') }}"
+                class="fw-semibold text-primary small"
+            >
+                Login
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Footer -->
+    <div class="text-center mt-3">
+
+        <small class="text-muted">
+            © 2026 MediPredict · Secure Hospital Management
+        </small>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    const togglePassword = document.getElementById("togglePassword");
+    const password = document.getElementById("password");
+    const passwordIcon = document.getElementById("passwordIcon");
+
+    const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+    const confirmPassword = document.getElementById("confirm_password");
+    const confirmPasswordIcon = document.getElementById("confirmPasswordIcon");
+
+    const registerForm = document.getElementById("registerForm");
+    const matchMsg = document.getElementById("passwordMatchMessage");
+
+    if (togglePassword && password && passwordIcon) {
+        togglePassword.addEventListener("click", function () {
+            if (password.type === "password") {
+                password.type = "text";
+                passwordIcon.classList.remove("bi-eye");
+                passwordIcon.classList.add("bi-eye-slash");
+            } else {
+                password.type = "password";
+                passwordIcon.classList.remove("bi-eye-slash");
+                passwordIcon.classList.add("bi-eye");
+            }
+        });
+    }
+
+    if (toggleConfirmPassword && confirmPassword && confirmPasswordIcon) {
+        toggleConfirmPassword.addEventListener("click", function () {
+            if (confirmPassword.type === "password") {
+                confirmPassword.type = "text";
+                confirmPasswordIcon.classList.remove("bi-eye");
+                confirmPasswordIcon.classList.add("bi-eye-slash");
+            } else {
+                confirmPassword.type = "password";
+                confirmPasswordIcon.classList.remove("bi-eye-slash");
+                confirmPasswordIcon.classList.add("bi-eye");
+            }
+        });
+    }
+
+    // Real-time password matching feedback
+    if (confirmPassword && password && matchMsg) {
+        function checkMatch() {
+            if (confirmPassword.value && password.value !== confirmPassword.value) {
+                matchMsg.classList.remove("d-none");
+            } else {
+                matchMsg.classList.add("d-none");
+            }
+        }
+        confirmPassword.addEventListener("input", checkMatch);
+        password.addEventListener("input", checkMatch);
+    }
+</script>
+
+{% endblock %}

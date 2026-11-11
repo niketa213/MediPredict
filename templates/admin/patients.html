@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Patients | MediPredict{% endblock %}
+
+{% block page_title %}
+Manage Patients
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Patient Registry 👥</h2>
+            <p>Review registered hospital patients, profiles, and appointment records.</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="dashboard-card mb-4">
+        <form method="GET" action="{{ url_for('admin.patients') }}" class="row g-3 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by patient name, email, or phone..." value="{{ search or '' }}">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Search</button>
+                {% if search %}
+                    <a href="{{ url_for('admin.patients') }}" class="btn btn-outline-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="dashboard-card table-card">
+        {% if patients %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name & Email</th>
+                        <th>Phone</th>
+                        <th>Gender & DOB</th>
+                        <th>Assigned Bed</th>
+                        <th>Emergency Contact</th>
+                        <th>Appointments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td><strong>#PAT-{{ p.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar" style="width: 40px; height: 40px; font-size: 15px; background: #10b981;">
+                                    {{ p.user.name[0]|upper }}
+                                </div>
+                                <div>
+                                    <strong class="d-block">{{ p.user.name }}</strong>
+                                    <small class="text-muted">{{ p.user.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ p.user.phone or 'Not provided' }}</td>
+                        <td>
+                            <div>{{ p.gender or 'Not specified' }}</div>
+                            <small class="text-muted">{{ p.date_of_birth.strftime('%b %d, %Y') if p.date_of_birth else 'DOB not set' }}</small>
+                        </td>
+                        <td>
+                            {% if p.assigned_bed %}
+                                <span class="badge bg-warning text-dark border"><i class="bi bi-hospital me-1"></i>{{ p.assigned_bed.bed_number }} ({{ p.assigned_bed.ward }})</span>
+                            {% else %}
+                                <span class="text-muted small">None (Outpatient)</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ p.emergency_contact or 'None' }}</small></td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                {{ p.appointments|length }} booked
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h5>No patients found</h5>
+            <p>No registered patients match your search query.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

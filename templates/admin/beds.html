@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Beds & ICU Management | MediPredict{% endblock %}
+
+{% block page_title %}
+Beds & ICU Management
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Hospital Bed & ICU Census 🛏️</h2>
+            <p>Live occupancy monitoring, patient ward allocations, and critical care bed availability.</p>
+        </div>
+        <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addBedModal">
+            <i class="bi bi-plus-lg me-2"></i> Add Hospital Bed
+        </button>
+    </div>
+
+    <!-- Capacity Indicators -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-card stat-card">
+                <div class="stat-icon blue">
+                    <i class="bi bi-hospital"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Total Bed Capacity</span>
+                    <h3>{{ total_beds }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-card stat-card">
+                <div class="stat-icon green">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Available Beds</span>
+                    <h3>{{ available_count }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-card stat-card">
+                <div class="stat-icon orange">
+                    <i class="bi bi-person-wheelchair"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Occupied Beds</span>
+                    <h3>{{ occupied_count }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-card stat-card">
+                <div class="stat-icon red">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <span>ICU Units Available</span>
+                    <h3>{{ icu_available }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="dashboard-card mb-4">
+        <form method="GET" action="{{ url_for('admin.beds') }}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <select name="type" class="form-select">
+                    <option value="">All Bed Types (General, ICU, Private, Emergency)</option>
+                    <option value="General" {% if bed_type_filter == 'General' %}selected{% endif %}>General Ward</option>
+                    <option value="ICU" {% if bed_type_filter == 'ICU' %}selected{% endif %}>ICU / Critical Care</option>
+                    <option value="Private" {% if bed_type_filter == 'Private' %}selected{% endif %}>Private / Suite</option>
+                    <option value="Emergency" {% if bed_type_filter == 'Emergency' %}selected{% endif %}>Emergency Triage</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Available" {% if status_filter == 'Available' %}selected{% endif %}>Available</option>
+                    <option value="Occupied" {% if status_filter == 'Occupied' %}selected{% endif %}>Occupied</option>
+                    <option value="Maintenance" {% if status_filter == 'Maintenance' %}selected{% endif %}>Maintenance / Cleaning</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                {% if bed_type_filter or status_filter %}
+                    <a href="{{ url_for('admin.beds') }}" class="btn btn-outline-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Beds Table -->
+    <div class="dashboard-card table-card">
+        {% if beds %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Bed Number</th>
+                        <th>Ward / Location</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Occupant</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bed in beds %}
+                    <tr>
+                        <td>
+                            <strong>{{ bed.bed_number }}</strong>
+                        </td>
+                        <td>{{ bed.ward }}</td>
+                        <td>
+                            {% if bed.bed_type == 'ICU' %}
+                                <span class="badge bg-danger text-white"><i class="bi bi-heart-pulse me-1"></i>ICU</span>
+                            {% elif bed.bed_type == 'Emergency' %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-lightning-charge me-1"></i>Emergency</span>
+                            {% elif bed.bed_type == 'Private' %}
+                                <span class="badge bg-info text-dark"><i class="bi bi-star me-1"></i>Private</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">General</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if bed.status == 'Available' %}
+                                <span class="status-badge success">Available</span>
+                            {% elif bed.status == 'Occupied' %}
+                                <span class="status-badge danger">Occupied</span>
+                            {% else %}
+                                <span class="status-badge warning">{{ bed.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if bed.patient and bed.patient.user %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-person text-muted"></i>
+                                    <strong>{{ bed.patient.user.name }}</strong>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small">None</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ bed.notes or '-' }}</small></td>
+                        <td>
+                            {% if bed.status == 'Occupied' %}
+                                <form method="POST" action="{{ url_for('admin.beds') }}" class="d-inline">
+                                    <input type="hidden" name="action" value="discharge">
+                                    <input type="hidden" name="bed_id" value="{{ bed.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Discharge
+                                    </button>
+                                </form>
+                            {% elif bed.status == 'Available' %}
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#assignBedModal"
+                                        data-bed-id="{{ bed.id }}"
+                                        data-bed-number="{{ bed.bed_number }}"
+                                        data-bed-ward="{{ bed.ward }}"
+                                        data-bed-type="{{ bed.bed_type }}">
+                                    <i class="bi bi-person-plus me-1"></i> Assign
+                                </button>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('admin.beds') }}" class="d-inline">
+                                    <input type="hidden" name="action" value="update_status">
+                                    <input type="hidden" name="bed_id" value="{{ bed.id }}">
+                                    <input type="hidden" name="status" value="Available">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Mark Available</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-hospital"></i>
+            <h5>No beds found</h5>
+            <p>No beds match the current filter selection.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Assign Bed Modal -->
+<div class="modal fade" id="assignBedModal" tabindex="-1" aria-labelledby="assignBedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <form method="POST" action="{{ url_for('admin.beds') }}">
+                <input type="hidden" name="action" value="update_status">
+                <input type="hidden" name="bed_id" id="assignBedId" value="">
+                <input type="hidden" name="status" value="Occupied">
+                
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="assignBedModalLabel">
+                        <i class="bi bi-person-plus text-primary"></i>
+                        <span>Assign Bed <strong id="assignBedNumberText" class="text-primary font-monospace"></strong></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-4">
+                    <div class="p-3 mb-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted d-block text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Ward / Unit</small>
+                            <span id="assignBedWardText" class="fw-semibold text-dark"></span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Bed Category</small>
+                            <span id="assignBedTypeText" class="badge bg-secondary"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="assignPatientSelect" class="form-label fw-semibold">
+                            Select Patient <span class="text-danger">*</span>
+                        </label>
+                        {% if patients %}
+                        <select id="assignPatientSelect" name="patient_id" class="form-select form-select-lg" required>
+                            <option value="">Choose a patient to admit...</option>
+                            {% for p in patients %}
+                                <option value="{{ p.id }}">
+                                    {{ p.user.name }} ({{ p.user.email }}){% if p.assigned_bed %} — [Current: Bed {{ p.assigned_bed.bed_number }}]{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2 text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Admitting the patient will mark this bed as <span class="text-danger fw-semibold">Occupied</span>.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>No registered patients found. Please register patients before assigning beds.</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4" {% if not patients %}disabled{% endif %}>
+                        <i class="bi bi-check2-circle me-1"></i> Admit to Bed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bed Modal -->
+<div class="modal fade" id="addBedModal" tabindex="-1" aria-labelledby="addBedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <form method="POST" action="{{ url_for('admin.beds') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="addBedModalLabel"><i class="bi bi-hospital me-2 text-primary"></i>Add Hospital Bed</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Bed Code / Number *</label>
+                        <input type="text" name="bed_number" class="form-control" placeholder="e.g. ICU-06 or GEN-301" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ward / Unit Name *</label>
+                        <input type="text" name="ward" class="form-control" placeholder="e.g. Critical Care ICU, General Ward C" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Bed Category</label>
+                        <select name="bed_type" class="form-select">
+                            <option value="General">General Ward</option>
+                            <option value="ICU">ICU / Intensive Care</option>
+                            <option value="Private">Private Room</option>
+                            <option value="Emergency">Emergency Triage</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notes (Optional)</label>
+                        <input type="text" name="notes" class="form-control" placeholder="e.g. Equipped with ventilator">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-plus-lg me-1"></i> Save Bed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const assignBedModal = document.getElementById('assignBedModal');
+    if (assignBedModal) {
+        assignBedModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+
+            const bedId = button.getAttribute('data-bed-id');
+            const bedNumber = button.getAttribute('data-bed-number');
+            const bedWard = button.getAttribute('data-bed-ward');
+            const bedType = button.getAttribute('data-bed-type');
+
+            document.getElementById('assignBedId').value = bedId || '';
+            document.getElementById('assignBedNumberText').textContent = bedNumber || '';
+            document.getElementById('assignBedWardText').textContent = bedWard || '-';
+
+            const typeBadge = document.getElementById('assignBedTypeText');
+            if (typeBadge) {
+                typeBadge.textContent = bedType || 'General';
+                if (bedType === 'ICU') {
+                    typeBadge.className = 'badge bg-danger text-white';
+                } else if (bedType === 'Emergency') {
+                    typeBadge.className = 'badge bg-warning text-dark';
+                } else if (bedType === 'Private') {
+                    typeBadge.className = 'badge bg-info text-dark';
+                } else {
+                    typeBadge.className = 'badge bg-secondary';
+                }
+            }
+
+            const select = document.getElementById('assignPatientSelect');
+            if (select) {
+                select.value = '';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

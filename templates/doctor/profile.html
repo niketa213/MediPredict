@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Profile | MediPredict{% endblock %}
+
+{% block page_title %}
+My Profile
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Doctor Profile 👨‍⚕️</h2>
+            <p>Update your professional details, credentials, and consultation availability.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="dashboard-card text-center">
+                <div class="avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 30px;">
+                    {{ user.name[0]|upper }}
+                </div>
+                <h4 class="mb-1">Dr. {{ user.name }}</h4>
+                <p class="text-primary fw-semibold mb-2">{{ profile.specialization }}</p>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 mb-3">
+                    {{ profile.department.name if profile.department else 'General Department' }}
+                </span>
+
+                <hr class="my-3">
+
+                <div class="text-start small">
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Email:</strong>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Phone:</strong>
+                        <span>{{ user.phone or 'Not provided' }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Experience:</strong>
+                        <span>{{ profile.experience }} years</span>
+                    </div>
+                    <div>
+                        <strong class="text-muted d-block">Availability:</strong>
+                        <span>{{ profile.availability or 'Daily' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <h5 class="mb-4">Edit Professional Profile</h5>
+
+                <form method="POST" action="{{ url_for('doctor.profile') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="+1 555-0100">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Specialization *</label>
+                            <input type="text" name="specialization" class="form-control" value="{{ profile.specialization }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Experience (Years)</label>
+                            <input type="number" name="experience" class="form-control" value="{{ profile.experience }}" min="0">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Qualifications & Degrees</label>
+                            <input type="text" name="qualification" class="form-control" value="{{ profile.qualification or '' }}" placeholder="e.g. MBBS, MD, Fellowship in Cardiology">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Consultation Availability / Schedule</label>
+                            <input type="text" name="availability" class="form-control" value="{{ profile.availability or '' }}" placeholder="e.g. Mon-Fri (09:00 - 15:00)">
+                        </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="bi bi-check-lg me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

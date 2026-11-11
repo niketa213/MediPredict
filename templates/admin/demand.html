@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Demand Data | MediPredict{% endblock %}
+
+{% block page_title %}
+Demand Data
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Historical Hospital Demand 📈</h2>
+            <p>Historical clinical occupancy, patient flow, and resource dataset used to train AI forecast models.</p>
+        </div>
+        <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addDemandModal">
+            <i class="bi bi-plus-circle me-2"></i> Log Daily Demand
+        </button>
+    </div>
+
+    <!-- Demand Records Table -->
+    <div class="dashboard-card table-card">
+        {% if records %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Department</th>
+                        <th>Patients Treated</th>
+                        <th>Admissions</th>
+                        <th>Discharges</th>
+                        <th>Beds Available</th>
+                        <th>ICU Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in records %}
+                    <tr>
+                        <td><strong>{{ rec.date.strftime('%b %d, %Y') }}</strong></td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ rec.department }}</span>
+                        </td>
+                        <td><span class="fw-semibold text-primary">{{ rec.patient_count }}</span></td>
+                        <td><span class="text-success"><i class="bi bi-box-arrow-in-right me-1"></i>{{ rec.admissions }}</span></td>
+                        <td><span class="text-secondary"><i class="bi bi-box-arrow-right me-1"></i>{{ rec.discharges }}</span></td>
+                        <td>{{ rec.beds_available }}</td>
+                        <td>{{ rec.icu_available }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-database-x"></i>
+            <h5>No demand records yet</h5>
+            <p>Log daily patient demand entries or run seed data.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Log Demand Modal -->
+<div class="modal fade" id="addDemandModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.demand') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-clipboard-data me-2 text-primary"></i>Log Daily Demand Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Date *</label>
+                        <input type="date" name="date" class="form-control" value="{{ today }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department *</label>
+                        <select name="department" class="form-select" required>
+                            {% for d in departments %}
+                                <option value="{{ d.name }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Total Patients</label>
+                            <input type="number" name="patient_count" class="form-control" value="20" min="0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Admissions</label>
+                            <input type="number" name="admissions" class="form-control" value="12" min="0" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label">Discharges</label>
+                            <input type="number" name="discharges" class="form-control" value="10" min="0" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Beds Avail.</label>
+                            <input type="number" name="beds_available" class="form-control" value="15" min="0" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">ICU Avail.</label>
+                            <input type="number" name="icu_available" class="form-control" value="4" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Demand Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

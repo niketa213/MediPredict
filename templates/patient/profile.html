@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | MediPredict{% endblock %}
+
+{% block page_title %}
+My Profile
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Patient Profile 👤</h2>
+            <p>Manage your personal contact info, medical emergency contact, and address.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Overview Card -->
+        <div class="col-lg-4">
+            <div class="dashboard-card text-center">
+                <div class="avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px; background: #10b981;">
+                    {{ current_user.name[0]|upper }}
+                </div>
+                <h4 class="mb-1">{{ current_user.name }}</h4>
+                <p class="text-muted small mb-3">{{ current_user.email }}</p>
+                <span class="status-badge success mb-4">Patient Account</span>
+
+                <hr class="my-3">
+
+                <div class="text-start small">
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Phone:</strong>
+                        <span>{{ current_user.phone or 'Not provided' }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Gender:</strong>
+                        <span>{{ profile.gender or 'Not set' }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Date of Birth:</strong>
+                        <span>{{ profile.date_of_birth.strftime('%b %d, %Y') if profile.date_of_birth else 'Not set' }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Emergency Contact:</strong>
+                        <span>{{ profile.emergency_contact or 'Not set' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form Card -->
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <h5 class="mb-4">Update Personal Information</h5>
+
+                <form method="POST" action="{{ url_for('patient.profile') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="name" class="form-control" value="{{ current_user.name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" value="{{ current_user.phone or '' }}" placeholder="+1 555-0100">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="date_of_birth" class="form-control" value="{{ profile.date_of_birth.isoformat() if profile.date_of_birth else '' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="Male" {% if profile.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if profile.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if profile.gender == 'Other' %}selected{% endif %}>Other</option>
+                                <option value="Prefer not to say" {% if profile.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Residential Address</label>
+                            <textarea name="address" rows="2" class="form-control" placeholder="Street, City, Postal Code...">{{ profile.address or '' }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Emergency Contact Phone</label>
+                            <input type="text" name="emergency_contact" class="form-control" value="{{ profile.emergency_contact or '' }}" placeholder="+1 555-0911">
+                        </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="bi bi-check-lg me-1"></i> Save Profile
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard | MediPredict{% endblock %}
+
+{% block page_title %}
+Patient Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+
+        <div>
+            <h2>
+                Good to see you, {{ user.name }} 👋
+            </h2>
+
+            <p>
+                Manage your appointments, find specialist doctors, and check AI health insights.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('patient.doctors') }}"
+            class="btn-primary-custom"
+        >
+            <i class="bi bi-search me-2"></i>
+            Find a Doctor
+        </a>
+
+    </div>
+
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+
+        <!-- Appointments -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon blue">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Total Appointments
+                    </span>
+
+                    <h3>{{ total }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Upcoming -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon green">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Upcoming Visits
+                    </span>
+
+                    <h3>{{ upcoming }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Doctors -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon orange">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Doctors Visited
+                    </span>
+
+                    <h3>{{ doctors_visited }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Completed -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon red">
+                    <i class="bi bi-heart-pulse"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Completed Consults
+                    </span>
+
+                    <h3>{{ completed }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Main Dashboard Row -->
+    <div class="row g-4">
+
+        <!-- Upcoming Appointments -->
+        <div class="col-lg-8">
+
+            <div class="dashboard-card table-card">
+
+                <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                >
+
+                    <div>
+                        <h5 class="mb-1">
+                            Upcoming Appointments
+                        </h5>
+
+                        <small class="text-muted">
+                            Your scheduled doctor consultations
+                        </small>
+                    </div>
+
+                    <a
+                        href="{{ url_for('patient.appointments') }}"
+                        class="small text-primary fw-semibold"
+                    >
+                        View All
+                    </a>
+
+                </div>
+
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Department</th>
+                                <th>Schedule</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in appointments %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar" style="width: 34px; height: 34px; font-size: 13px;">
+                                            {{ appt.doctor.user.name[0]|upper if appt.doctor and appt.doctor.user else 'D' }}
+                                        </div>
+                                        <div>
+                                            <strong class="d-block">Dr. {{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'Doctor' }}</strong>
+                                            <small class="text-muted">{{ appt.doctor.specialization if appt.doctor else '' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ appt.doctor.department.name if appt.doctor and appt.doctor.department else 'General' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>{{ appt.appointment_date.strftime('%b %d, %Y') }}</div>
+                                    <small class="text-primary fw-semibold">{{ appt.appointment_time.strftime('%I:%M %p') }}</small>
+                                </td>
+                                <td>
+                                    {% if appt.status == 'confirmed' %}
+                                        <span class="status-badge success">Confirmed</span>
+                                    {% elif appt.status == 'pending' %}
+                                        <span class="status-badge warning">Pending</span>
+                                    {% else %}
+                                        <span class="status-badge info">{{ appt.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('patient.cancel_appointment', appointment_id=appt.id) }}" onsubmit="return confirm('Cancel this appointment?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+
+                    <i class="bi bi-calendar-x"></i>
+
+                    <h5>
+                        No upcoming appointments
+                    </h5>
+
+                    <p>
+                        You don't have any appointments scheduled yet.
+                    </p>
+
+                    <a
+                        href="{{ url_for('patient.doctors') }}"
+                        class="btn-primary-custom d-inline-block mt-3"
+                    >
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Book Appointment
+                    </a>
+
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+
+            <div class="dashboard-card">
+
+                <h5 class="mb-1">
+                    Quick Actions
+                </h5>
+
+                <small class="text-muted">
+                    Frequently used services
+                </small>
+
+
+                <div class="mt-4">
+
+                    <a
+                        href="{{ url_for('patient.doctors') }}"
+                        class="d-flex align-items-center gap-3
+                               p-3 mb-2 rounded-3
+                               text-dark"
+                        style="background:#eff6ff;"
+                    >
+
+                        <div class="stat-icon blue">
+                            <i class="bi bi-search-heart"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                Find a Doctor
+                            </strong>
+
+                            <small class="text-muted">
+                                Search doctors by specialization
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="{{ url_for('patient.appointments') }}"
+                        class="d-flex align-items-center gap-3
+                               p-3 mb-2 rounded-3
+                               text-dark"
+                        style="background:#f0fdf4;"
+                    >
+
+                        <div class="stat-icon green">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                My Appointments
+                            </strong>
+
+                            <small class="text-muted">
+                                Review booked consultations
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="{{ url_for('patient.profile') }}"
+                        class="d-flex align-items-center gap-3
+                               p-3 mb-2 rounded-3
+                               text-dark"
+                        style="background:#fffbeb;"
+                    >
+
+                        <div class="stat-icon orange">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                My Profile
+                            </strong>
+
+                            <small class="text-muted">
+                                View personal & emergency information
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a
+                        href="{{ url_for('patient.chatbot') }}"
+                        class="d-flex align-items-center gap-3
+                               p-3 rounded-3
+                               text-dark"
+                        style="background:#f3e8ff;"
+                    >
+
+                        <div class="stat-icon purple" style="background:#e9d5ff; color:#7e22ce;">
+                            <i class="bi bi-robot"></i>
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                AI Assistant
+                            </strong>
+
+                            <small class="text-muted">
+                                24/7 smart health guidance
+                            </small>
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- AI Recommendation Section -->
+    <div class="dashboard-card mt-4">
+
+        <div class="row align-items-center">
+
+            <div class="col-md-8">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon blue">
+                        <i class="bi bi-stars"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1">
+                            AI Doctor Recommendation
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Describe your symptoms in plain English and our AI will match you
+                            with the right medical department and recommended specialists.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                <a
+                    href="{{ url_for('patient.recommendation') }}"
+                    class="btn-primary-custom"
+                >
+                    <i class="bi bi-magic me-2"></i>
+                    Get Recommendation
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

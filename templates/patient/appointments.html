@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments | MediPredict{% endblock %}
+
+{% block page_title %}
+My Appointments
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>My Appointments 🗓️</h2>
+            <p>View your scheduled doctor visits, consultation status, and appointment history.</p>
+        </div>
+        <a href="{{ url_for('patient.doctors') }}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg me-1"></i> Book New Appointment
+        </a>
+    </div>
+
+    <div class="dashboard-card table-card">
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Appointment Date & Time</th>
+                        <th>Reason for Visit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr>
+                        <td><strong>#APT-{{ appt.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                                    {{ appt.doctor.user.name[0]|upper if appt.doctor and appt.doctor.user else 'D' }}
+                                </div>
+                                <div>
+                                    <strong class="d-block">Dr. {{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'Specialist' }}</strong>
+                                    <small class="text-muted">{{ appt.doctor.specialization if appt.doctor else '' }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                {{ appt.doctor.department.name if appt.doctor and appt.doctor.department else 'General Department' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div>{{ appt.appointment_date.strftime('%a, %b %d, %Y') }}</div>
+                            <small class="text-primary fw-semibold">{{ appt.appointment_time.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ appt.reason or 'Consultation' }}</small>
+                        </td>
+                        <td>
+                            {% if appt.status == 'confirmed' %}
+                                <span class="status-badge success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                            {% elif appt.status == 'pending' %}
+                                <span class="status-badge warning"><i class="bi bi-clock me-1"></i>Pending Review</span>
+                            {% elif appt.status == 'completed' %}
+                                <span class="status-badge info"><i class="bi bi-check-all me-1"></i>Completed</span>
+                            {% elif appt.status == 'cancelled' %}
+                                <span class="status-badge danger"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
+                            {% else %}
+                                <span class="status-badge danger">{{ appt.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.status in ['pending', 'confirmed'] %}
+                            <form method="POST" action="{{ url_for('patient.cancel_appointment', appointment_id=appt.id) }}" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-x-lg me-1"></i> Cancel
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h5>No appointments booked yet</h5>
+            <p>Find a doctor or use the AI symptom recommender to book your first appointment.</p>
+            <a href="{{ url_for('patient.doctors') }}" class="btn-primary-custom d-inline-block mt-3">
+                <i class="bi bi-search me-1"></i> Find a Doctor
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

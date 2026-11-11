@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment | MediPredict{% endblock %}
+
+{% block page_title %}
+Book Appointment
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Schedule Doctor Consultation 📅</h2>
+            <p>Select your preferred consultation date, time slot, and reason for visit.</p>
+        </div>
+        <a href="{{ url_for('patient.doctors') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Doctors
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Doctor Info Sidebar -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="text-center pb-3 border-bottom">
+                    <div class="avatar mx-auto mb-3" style="width: 70px; height: 70px; font-size: 26px;">
+                        {{ doctor.user.name[0]|upper }}
+                    </div>
+                    <h4 class="mb-1">Dr. {{ doctor.user.name }}</h4>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 mb-2">
+                        {{ doctor.department.name if doctor.department else 'General Department' }}
+                    </span>
+                    <p class="text-muted small mb-0">{{ doctor.specialization }}</p>
+                </div>
+
+                <div class="pt-3 small">
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Qualifications:</strong>
+                        <span>{{ doctor.qualification or 'Certified Medical Specialist' }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Experience:</strong>
+                        <span>{{ doctor.experience }} years</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block">Consultation Hours:</strong>
+                        <span>{{ doctor.availability or 'Mon-Fri (09:00 - 16:00)' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <h5 class="mb-4">Appointment Details</h5>
+
+                <form method="POST" action="{{ url_for('patient.book_appointment', doctor_id=doctor.id) }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Appointment Date *</label>
+                            <input
+                                type="date"
+                                name="appointment_date"
+                                class="form-control"
+                                min="{{ current_date }}"
+                                value="{{ current_date }}"
+                                required
+                            >
+                            <div class="form-text">Choose today or a future date.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Preferred Time Slot *</label>
+                            <select name="appointment_time" class="form-select" required>
+                                <option value="">Select consultation time...</option>
+                                <option value="09:00">09:00 AM</option>
+                                <option value="09:30">09:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:30">01:30 PM</option>
+                                <option value="14:00">02:00 PM</option>
+                                <option value="14:30">02:30 PM</option>
+                                <option value="15:00">03:00 PM</option>
+                                <option value="15:30">03:30 PM</option>
+                                <option value="16:00">04:00 PM</option>
+                            </select>
+                            <div class="form-text">Standard consultation duration is 30 minutes.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Reason for Visit / Primary Symptoms</label>
+                            <textarea
+                                name="reason"
+                                rows="3"
+                                class="form-control"
+                                placeholder="Describe why you want to see the doctor (e.g. routine checkup, headache since 2 days, follow-up medication)..."
+                            ></textarea>
+                        </div>
+
+                        <div class="col-12 mt-4 pt-2 border-top d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('patient.doctors') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="bi bi-calendar-check me-1"></i> Confirm Appointment Request
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

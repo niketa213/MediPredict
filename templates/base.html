@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}MediPredict{% endblock %}
+    </title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- MediPredict CSS -->
+    <link
+        href="{{ url_for('static', filename='css/style.css') }}"
+        rel="stylesheet"
+    >
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+
+<body>
+
+    {% if current_user.is_authenticated %}
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside
+        class="sidebar"
+        id="sidebar"
+    >
+
+        <!-- Brand -->
+        <div class="sidebar-logo brand">
+
+            <div class="logo-icon brand-mark">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+
+            <div>
+                <h4>MediPredict</h4>
+                <span>Hospital AI Platform</span>
+            </div>
+
+        </div>
+
+
+        <!-- User -->
+        <div class="side-user">
+
+            <div class="user-avatar avatar">
+                {{ current_user.name[:1]|upper }}
+            </div>
+
+            <div class="user-info">
+
+                <strong>
+                    {{ current_user.name }}
+                </strong>
+
+                <span>
+                    {{ current_user.role|capitalize }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav nav-list">
+
+            <!-- ================= PATIENT ================= -->
+
+            {% if current_user.role == "patient" %}
+
+                <div class="nav-label">
+                    Patient Menu
+                </div>
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.dashboard') }}"
+                >
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.doctors') }}"
+                >
+                    <i class="bi bi-search-heart"></i>
+                    <span>Find Doctor</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.recommendation') }}"
+                >
+                    <i class="bi bi-stars"></i>
+                    <span>AI Recommendation</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.appointments') }}"
+                >
+                    <i class="bi bi-calendar2-check"></i>
+                    <span>My Appointments</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.chatbot') }}"
+                >
+                    <i class="bi bi-robot"></i>
+                    <span>AI Assistant</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('patient.profile') }}"
+                >
+                    <i class="bi bi-person-circle"></i>
+                    <span>My Profile</span>
+                </a>
+
+
+            <!-- ================= DOCTOR ================= -->
+
+            {% elif current_user.role == "doctor" %}
+
+                <div class="nav-label">
+                    Doctor Menu
+                </div>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('doctor.dashboard') }}"
+                >
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('doctor.appointments') }}"
+                >
+                    <i class="bi bi-calendar2-check"></i>
+                    <span>Appointments</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('doctor.patients') }}"
+                >
+                    <i class="bi bi-people-fill"></i>
+                    <span>My Patients</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('doctor.profile') }}"
+                >
+                    <i class="bi bi-person-badge"></i>
+                    <span>My Profile</span>
+                </a>
+
+
+            <!-- ================= ADMIN ================= -->
+
+            {% elif current_user.role == "admin" %}
+
+                <div class="nav-label">
+                    Administration
+                </div>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.dashboard') }}"
+                >
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.doctors') }}"
+                >
+                    <i class="bi bi-person-badge-fill"></i>
+                    <span>Doctors</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.patients') }}"
+                >
+                    <i class="bi bi-people-fill"></i>
+                    <span>Patients</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.departments') }}"
+                >
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>Departments</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.appointments') }}"
+                >
+                    <i class="bi bi-calendar2-check"></i>
+                    <span>Appointments</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.beds') }}"
+                >
+                    <i class="bi bi-hospital-fill"></i>
+                    <span>Beds & ICU</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.demand') }}"
+                >
+                    <i class="bi bi-database-fill"></i>
+                    <span>Demand Data</span>
+                </a>
+
+
+                <a
+                    class="nav-link nav-item"
+                    href="{{ url_for('admin.forecast') }}"
+                >
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>AI Forecast</span>
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+
+        <!-- Footer -->
+        <div class="sidebar-bottom side-footer">
+
+            <a
+                class="nav-link nav-item logout-link logout text-danger"
+                href="{{ url_for('auth.logout') }}"
+            >
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- Mobile overlay -->
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main
+        class="{% if current_user.is_authenticated %}main-content app-main{% else %}auth-content auth-main{% endif %}"
+    >
+
+        {% if current_user.is_authenticated %}
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <!-- Mobile menu -->
+                <button
+                    class="mobile-menu-btn mobile-toggle"
+                    id="mobileMenuBtn"
+                    type="button"
+                    aria-label="Toggle navigation menu"
+                >
+                    <i class="bi bi-list"></i>
+                </button>
+
+
+                <div class="topbar-title">
+
+                    <span class="eyebrow">
+                        {% block section_name %}
+                        MediPredict
+                        {% endblock %}
+                    </span>
+
+                    <h5 class="page-title mb-0">
+                        {% block page_title %}
+                        Dashboard
+                        {% endblock %}
+                    </h5>
+
+                </div>
+
+            </div>
+
+
+            <!-- User profile in topbar -->
+            <div class="topbar-user">
+                <div class="user-avatar mini-avatar">
+                    {{ current_user.name[:1]|upper }}
+                </div>
+                <div class="user-info d-none d-md-block">
+                    <strong>{{ current_user.name }}</strong>
+                    <small>{{ current_user.role|capitalize }}</small>
+                </div>
+            </div>
+
+        </header>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             FLASH MESSAGES
+             ================================================= -->
+
+        {% with messages = get_flashed_messages(
+            with_categories=true
+        ) %}
+
+            {% if messages %}
+
+                <div class="flash-container flash-stack">
+
+                    {% for category, message in messages %}
+
+                        <div
+                            class="alert alert-{{ category if category != 'error' else 'danger' }}
+                                   alert-dismissible fade show"
+                            role="alert"
+                        >
+
+                            <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' or category == 'error' %}bi-exclamation-triangle-fill{% elif category == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                            {{ message }}
+
+                            <button
+                                class="btn-close"
+                                type="button"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- =================================================
+             PAGE CONTENT
+             ================================================= -->
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+
+    <!-- Bootstrap JS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+
+    <!-- Main JS -->
+    <script
+        src="{{ url_for('static', filename='js/main.js') }}"
+    ></script>
+
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Find a Doctor | MediPredict{% endblock %}
+
+{% block page_title %}
+Find a Doctor
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Find a Specialist 🩺</h2>
+            <p>Search qualified doctors by department, specialization, or medical condition.</p>
+        </div>
+        <a href="{{ url_for('patient.recommendation') }}" class="btn-primary-custom">
+            <i class="bi bi-stars me-2"></i> AI Doctor Recommender
+        </a>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="dashboard-card mb-4">
+        <form method="GET" action="{{ url_for('patient.doctors') }}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by doctor name or specialty..." value="{{ search or '' }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="department" class="form-select">
+                    <option value="">All Clinical Departments</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}" {% if department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Search</button>
+                {% if search or department_id %}
+                    <a href="{{ url_for('patient.doctors') }}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Doctor Grid -->
+    {% if doctors %}
+    <div class="row g-4">
+        {% for doc in doctors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="dashboard-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar" style="width: 52px; height: 52px; font-size: 20px;">
+                            {{ doc.user.name[0]|upper }}
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Dr. {{ doc.user.name }}</h5>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle mt-1">
+                                {{ doc.department.name if doc.department else 'General Department' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong class="d-block small text-dark">{{ doc.specialization }}</strong>
+                        <small class="text-muted">{{ doc.qualification or 'Certified Specialist' }}</small>
+                    </div>
+
+                    <div class="bg-light p-2 rounded small mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Experience:</span>
+                            <strong>{{ doc.experience }} years</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Hours:</span>
+                            <span class="text-dark">{{ doc.availability or 'Mon-Fri (09:00 - 16:00)' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-top">
+                    <a href="{{ url_for('patient.book_appointment', doctor_id=doc.id) }}" class="btn-primary-custom w-100 text-center justify-content-center">
+                        <i class="bi bi-calendar-plus me-1"></i> Book Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="dashboard-card text-center py-5">
+        <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h5>No doctors found</h5>
+            <p>Try searching with another keyword or browse all departments.</p>
+            <a href="{{ url_for('patient.doctors') }}" class="btn btn-outline-primary btn-sm mt-2">View All Doctors</a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

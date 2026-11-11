@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}My Patients | Doctor Portal{% endblock %}
+
+{% block page_title %}
+My Patients
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Patient Registry 👥</h2>
+            <p>Patients who have consulted or scheduled appointments under your clinical care.</p>
+        </div>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="dashboard-card table-card">
+        {% if patients %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Contact Email</th>
+                        <th>Phone</th>
+                        <th>Gender & DOB</th>
+                        <th>Emergency Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td><strong>#PAT-{{ p.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar" style="width: 36px; height: 36px; font-size: 14px; background: #3b82f6;">
+                                    {{ p.user.name[0]|upper if p.user else 'P' }}
+                                </div>
+                                <strong>{{ p.user.name if p.user else 'Unknown' }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ p.user.email if p.user else '-' }}</td>
+                        <td>{{ p.user.phone or 'Not provided' if p.user else '-' }}</td>
+                        <td>
+                            <div>{{ p.gender or 'Not specified' }}</div>
+                            <small class="text-muted">{{ p.date_of_birth.strftime('%b %d, %Y') if p.date_of_birth else 'No DOB' }}</small>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ p.emergency_contact or 'None' }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h5>No patients found</h5>
+            <p>Patients who book appointments with you will appear in this registry.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

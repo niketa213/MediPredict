@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}AI Demand Forecast | MediPredict{% endblock %}
+
+{% block page_title %}
+AI Demand Forecast
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Predictive Inflow & Capacity Intelligence 🤖</h2>
+            <p>Machine learning projections for patient admission volume, bed demand, and critical care needs.</p>
+        </div>
+        <form method="POST" action="{{ url_for('admin.forecast') }}" class="d-inline">
+            <input type="hidden" name="days" value="7">
+            <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-arrow-repeat me-2"></i> Recalculate AI Forecast
+            </button>
+        </form>
+    </div>
+
+    <!-- AI Model & Risk Banner -->
+    <div class="dashboard-card mb-4" style="border-left: 5px solid {% if summary.risk_level == 'High' %}#dc2626{% elif summary.risk_level == 'Moderate' %}#f59e0b{% else %}#16a34a{% endif %};">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge {% if summary.risk_level == 'High' %}bg-danger{% elif summary.risk_level == 'Moderate' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                        {{ summary.risk_level }} Capacity Risk
+                    </span>
+                    <span class="text-muted small">Model: <strong>{{ summary.model_version }}</strong></span>
+                </div>
+                <p class="mb-0 text-dark fw-semibold">
+                    {{ summary.recommendation }}
+                </p>
+            </div>
+            <div class="d-flex gap-3 text-end">
+                <div>
+                    <small class="text-muted d-block">Available Beds</small>
+                    <strong class="fs-5 text-success">{{ summary.available_beds }} / {{ summary.total_beds }}</strong>
+                </div>
+                <div>
+                    <small class="text-muted d-block">ICU Reserves</small>
+                    <strong class="fs-5 text-primary">{{ summary.avail_icu }} / {{ summary.icu_beds }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7-Day Day-by-Day Forecast Cards -->
+    <h5 class="mb-3">Upcoming 7-Day Projection</h5>
+    <div class="row g-3 mb-4">
+        {% for day in summary.daily_totals %}
+        <div class="col-md-6 col-lg-3 col-xl">
+            <div class="dashboard-card p-3 text-center h-100">
+                <span class="text-muted small fw-bold d-block mb-2">{{ day.date }}</span>
+                <div class="p-2 mb-2 rounded" style="background: #eff6ff;">
+                    <small class="text-muted d-block">Patients</small>
+                    <strong class="fs-4 text-primary">{{ day.patients }}</strong>
+                </div>
+                <div class="d-flex justify-content-around small">
+                    <div>
+                        <span class="text-muted d-block">Beds</span>
+                        <strong class="text-warning">{{ day.beds }}</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted d-block">ICU</span>
+                        <strong class="text-danger">{{ day.icu }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Department Demand Projections Table -->
+    <div class="dashboard-card table-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-1">Department Capacity Breakdown</h5>
+                <small class="text-muted">Expected 7-day average daily intake and bed load per specialty</small>
+            </div>
+            <span class="badge bg-light text-dark border">
+                <i class="bi bi-clock-history me-1"></i> Continuous Learning
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Avg Daily Patients</th>
+                        <th>Avg Daily Bed Demand</th>
+                        <th>Avg Daily ICU Demand</th>
+                        <th>Resource Pressure</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in summary.dept_summary %}
+                    <tr>
+                        <td>
+                            <strong>{{ dept.department }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                                ~{{ dept.avg_patients }} patients/day
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ dept.avg_beds }} beds</strong>
+                        </td>
+                        <td>
+                            {% if dept.avg_icu > 0 %}
+                                <span class="text-danger fw-semibold">{{ dept.avg_icu }} ICU units</span>
+                            {% else %}
+                                <span class="text-muted">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if dept.avg_icu >= 3 or dept.avg_beds >= 15 %}
+                                <span class="status-badge danger">High Demand</span>
+                            {% elif dept.avg_beds >= 10 %}
+                                <span class="status-badge warning">Moderate</span>
+                            {% else %}
+                                <span class="status-badge success">Normal</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

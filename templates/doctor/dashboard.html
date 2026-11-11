@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard | MediPredict{% endblock %}
+
+{% block page_title %}
+Doctor Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+
+        <div>
+            <h2>
+                Welcome, Dr. {{ user.name }} 👨‍⚕️
+            </h2>
+
+            <p>
+                Manage your appointments, patient consultations, and daily schedule.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('doctor.appointments') }}"
+            class="btn-primary-custom"
+        >
+            <i class="bi bi-calendar-check me-2"></i>
+            View Appointments
+        </a>
+
+    </div>
+
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+
+        <!-- Today's Appointments -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon blue">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Today's Schedule
+                    </span>
+
+                    <h3>{{ appointments|length }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Patients -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon green">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Total Patients
+                    </span>
+
+                    <h3>{{ patients }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pending -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon orange">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Pending Requests
+                    </span>
+
+                    <h3>{{ pending }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Completed -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card stat-card">
+
+                <div class="stat-icon red">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <span>
+                        Completed
+                    </span>
+
+                    <h3>{{ completed }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Main Row -->
+    <div class="row g-4">
+
+        <!-- Today's Appointments -->
+        <div class="col-lg-8">
+
+            <div class="dashboard-card table-card">
+
+                <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                >
+
+                    <div>
+
+                        <h5 class="mb-1">
+                            Today's Consultations
+                        </h5>
+
+                        <small class="text-muted">
+                            Patients scheduled for today
+                        </small>
+
+                    </div>
+
+                    <a
+                        href="{{ url_for('doctor.appointments') }}"
+                        class="small text-primary fw-semibold"
+                    >
+                        View All
+                    </a>
+
+                </div>
+
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Time</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in appointments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ appt.patient.user.name if appt.patient and appt.patient.user else 'Patient #' ~ appt.patient_id }}</strong>
+                                    <div class="small text-muted">{{ appt.patient.user.phone if appt.patient and appt.patient.user else '' }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-primary border fs-6">
+                                        {{ appt.appointment_time.strftime('%I:%M %p') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ appt.reason or 'General consultation' }}</small>
+                                </td>
+                                <td>
+                                    {% if appt.status == 'confirmed' %}
+                                        <span class="status-badge success">Confirmed</span>
+                                    {% elif appt.status == 'pending' %}
+                                        <span class="status-badge warning">Pending</span>
+                                    {% else %}
+                                        <span class="status-badge info">{{ appt.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('doctor.appointments') }}" class="d-inline">
+                                        <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                                        {% if appt.status == 'pending' %}
+                                            <input type="hidden" name="status" value="confirmed">
+                                            <button type="submit" class="btn btn-sm btn-success">Confirm</button>
+                                        {% elif appt.status == 'confirmed' %}
+                                            <input type="hidden" name="status" value="completed">
+                                            <button type="submit" class="btn btn-sm btn-primary">Complete</button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+
+                    <i class="bi bi-calendar-x"></i>
+
+                    <h5>
+                        No appointments today
+                    </h5>
+
+                    <p>
+                        You don't have any appointments scheduled for today.
+                    </p>
+
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- Doctor Profile -->
+        <div class="col-lg-4">
+
+            <div class="dashboard-card">
+
+                <div class="text-center">
+
+                    <div
+                        class="avatar mx-auto mb-3"
+                        style="width:70px;height:70px;font-size:25px;"
+                    >
+                        {{ user.name[0]|upper }}
+                    </div>
+
+                    <h5 class="mb-1">
+                        Dr. {{ user.name }}
+                    </h5>
+
+                    <small class="text-primary fw-semibold d-block">
+                        {{ profile.specialization }}
+                    </small>
+
+                    <small class="text-muted">
+                        {{ profile.department.name if profile.department else 'General Department' }}
+                    </small>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted small">
+                        Email
+                    </span>
+
+                    <strong class="small">
+                        {{ user.email }}
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted small">
+                        Phone
+                    </span>
+
+                    <strong class="small">
+                        {{ user.phone or "Not added" }}
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted small">
+                        Experience
+                    </span>
+
+                    <strong class="small">
+                        {{ profile.experience }} years
+                    </strong>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <span class="text-muted small">
+                        Availability
+                    </span>
+
+                    <small class="badge bg-light text-dark border">
+                        {{ profile.availability or "Daily" }}
+                    </small>
+
+                </div>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <a href="{{ url_for('doctor.profile') }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-pencil me-1"></i> Edit Doctor Profile
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Quick Navigation -->
+    <div class="dashboard-card mt-4">
+
+        <div class="row align-items-center">
+
+            <div class="col-md-8">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon green">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <div>
+
+                        <h5 class="mb-1">
+                            Patient Records & History
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            Access previous consultation records, patient contact info, and medical visits.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                <a
+                    href="{{ url_for('doctor.patients') }}"
+                    class="btn-primary-custom"
+                >
+                    <i class="bi bi-person-lines-fill me-2"></i>
+                    My Patients
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

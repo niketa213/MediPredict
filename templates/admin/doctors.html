@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Doctors | MediPredict{% endblock %}
+
+{% block page_title %}
+Manage Doctors
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Doctor Directory 👨‍⚕️</h2>
+            <p>Manage medical specialists, department assignments, and availability schedules.</p>
+        </div>
+        <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+            <i class="bi bi-person-plus-fill me-2"></i> Add New Doctor
+        </button>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="dashboard-card mb-4">
+        <form method="GET" action="{{ url_for('admin.doctors') }}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, email, specialization..." value="{{ search or '' }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="dept" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}" {% if dept_filter == d.id %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                {% if search or dept_filter %}
+                    <a href="{{ url_for('admin.doctors') }}" class="btn btn-outline-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Doctors Table -->
+    <div class="dashboard-card table-card">
+        {% if doctors %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Specialization & Qualification</th>
+                        <th>Experience</th>
+                        <th>Availability</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in doctors %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar" style="width: 42px; height: 42px; font-size: 16px;">
+                                    {{ doc.user.name[0]|upper }}
+                                </div>
+                                <div>
+                                    <strong class="d-block">{{ doc.user.name }}</strong>
+                                    <small class="text-muted">{{ doc.user.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                                {{ doc.department.name if doc.department else 'General' }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ doc.specialization }}</strong>
+                            {% if doc.qualification %}
+                                <div class="small text-muted">{{ doc.qualification }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ doc.experience }} years</td>
+                        <td><small class="text-muted">{{ doc.availability or 'Not specified' }}</small></td>
+                        <td>
+                            {% if doc.user.is_active %}
+                                <span class="status-badge success">Active</span>
+                            {% else %}
+                                <span class="status-badge danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.toggle_doctor_status', doctor_id=doc.id) }}">
+                                <button type="submit" class="btn btn-sm {% if doc.user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                    {% if doc.user.is_active %}Deactivate{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h5>No doctors found</h5>
+            <p>Try refining your search terms or register a new doctor.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.doctors') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDoctorModalLabel"><i class="bi bi-person-plus me-2 text-primary"></i>Register New Doctor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Dr. John Doe" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="doctor@medipredict.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password *</label>
+                            <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" placeholder="+1 555-0123">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department *</label>
+                            <select name="department_id" class="form-select" required>
+                                <option value="">Select Department</option>
+                                {% for d in departments %}
+                                    <option value="{{ d.id }}">{{ d.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Specialization *</label>
+                            <input type="text" name="specialization" class="form-control" placeholder="e.g. Interventional Cardiology" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Qualification</label>
+                            <input type="text" name="qualification" class="form-control" placeholder="e.g. MD, FACC">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Experience (Years)</label>
+                            <input type="number" name="experience" class="form-control" value="5" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Availability Schedule</label>
+                            <input type="text" name="availability" class="form-control" placeholder="e.g. Mon-Fri (09:00 - 16:00)">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Doctor Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

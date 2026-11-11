@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}AI Doctor Recommendation | MediPredict{% endblock %}
+
+{% block page_title %}
+AI Recommendation
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>AI Department & Specialist Recommender 🤖✨</h2>
+            <p>Describe what you are feeling in plain words. Our clinical AI model matches your symptoms to the most relevant medical department.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Input Form -->
+        <div class="col-lg-6">
+            <div class="dashboard-card h-100">
+                <h5 class="mb-3"><i class="bi bi-chat-heart text-primary me-2"></i>Describe Your Symptoms</h5>
+                <p class="text-muted small">
+                    Provide detail about what you are experiencing (e.g. pain location, fever duration, skin changes, difficulty breathing).
+                </p>
+
+                <form method="POST" action="{{ url_for('patient.recommendation') }}" id="symptomForm">
+                    <div class="mb-3">
+                        <textarea
+                            name="symptoms"
+                            id="symptomsInput"
+                            rows="4"
+                            class="form-control"
+                            placeholder="Type symptoms here, e.g. 'I have a high fever with chills, body ache, and persistent cough for 3 days...'"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- Quick Sample Symptom Chips -->
+                    <div class="mb-4">
+                        <small class="text-muted d-block mb-2">Or click an example to test:</small>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill chip-btn" onclick="fillSymptoms('Severe chest pain with breathlessness and palpitations')">
+                                ❤️ Chest pain & breathlessness
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill chip-btn" onclick="fillSymptoms('High fever, chills, persistent dry cough and fatigue')">
+                                🌡️ High fever & cough
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill chip-btn" onclick="fillSymptoms('Severe throbbing headache, migraine, and sensitivity to light')">
+                                🧠 Severe migraine headache
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill chip-btn" onclick="fillSymptoms('Red itchy skin rash with swelling and bumps')">
+                                🩹 Itchy skin rash
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill chip-btn" onclick="fillSymptoms('Knee joint pain and stiffness when walking')">
+                                🦴 Knee joint pain
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom w-100 justify-content-center">
+                        <i class="bi bi-stars me-2"></i> Analyze Symptoms with AI
+                    </button>
+                </form>
+
+                <div class="alert alert-warning mt-4 mb-0 small" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>Clinical Notice:</strong> This AI recommendation engine provides navigational guidance and does not constitute a formal diagnosis. If you experience severe emergencies (e.g. unconsciousness, acute bleeding), seek urgent emergency care immediately.
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="col-lg-6">
+            {% if result %}
+            <div class="dashboard-card h-100" style="border-top: 4px solid var(--primary);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="status-badge success">
+                        <i class="bi bi-check-circle me-1"></i>Analysis Complete</span>
+                    <small class="text-muted">Confidence: <strong>{{ result.confidence }}%</strong></small>
+                </div>
+
+                <div class="p-3 mb-4 rounded-3" style="background: #eff6ff;">
+                    <small class="text-primary fw-semibold text-uppercase tracking-wider">Recommended Department</small>
+                    <h3 class="mt-1 text-dark">{{ result.department }}</h3>
+                    <p class="text-muted small mb-0">{{ result.message }}</p>
+                </div>
+
+                <!-- Confidence Progress Bar -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Clinical Relevance Score</span>
+                        <span>{{ result.confidence }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ result.confidence }}%;" aria-valuenow="{{ result.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <!-- Matched Symptoms -->
+                {% if result.matched_symptoms %}
+                <div class="mb-4">
+                    <strong class="small d-block mb-2 text-muted">Detected Clinical Indicators:</strong>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for sym in result.matched_symptoms %}
+                            <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-tag me-1 text-primary"></i>{{ sym }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Matching Specialists -->
+                <h6 class="mb-3">Available Specialists in {{ result.department }}</h6>
+                {% if doctors %}
+                <div class="d-flex flex-column gap-2 mb-3">
+                    {% for doc in doctors %}
+                    <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between bg-white">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar" style="width: 42px; height: 42px; font-size: 16px;">
+                                {{ doc.user.name[0]|upper }}
+                            </div>
+                            <div>
+                                <strong class="d-block">Dr. {{ doc.user.name }}</strong>
+                                <small class="text-muted">{{ doc.specialization }} ({{ doc.experience }}y exp)</small>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('patient.book_appointment', doctor_id=doc.id) }}" class="btn btn-sm btn-primary">
+                            Book <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted small">No doctors are currently registered under this department.</p>
+                <a href="{{ url_for('patient.doctors') }}" class="btn btn-outline-primary btn-sm">Browse All Doctors</a>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="dashboard-card h-100 d-flex flex-column justify-content-center text-center p-5">
+                <div class="stat-icon blue mx-auto mb-3" style="width: 70px; height: 70px; font-size: 32px;">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <h5>Awaiting Symptoms</h5>
+                <p class="text-muted small mb-0">
+                    Enter your symptoms or pick one of the sample prompt chips on the left to receive AI triage recommendations and recommended specialists.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+function fillSymptoms(text) {
+    document.getElementById('symptomsInput').value = text;
+}
+</script>
+{% endblock %}
